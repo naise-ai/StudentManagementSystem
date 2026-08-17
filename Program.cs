@@ -2,133 +2,117 @@
 using StudentManagementSystem.Services;
 using StudentManagementSystem.Utilities;
 
-class Program
+namespace StudentManagementSystem;
+
+public class Program
 {
     private static readonly StudentService studentService = new();
 
-    static void Main()
+    public static void Main()
     {
         while (true)
         {
-            ShowDashboard();
+            Console.Clear();
+            ConsoleHelper.Header("STUDENT MANAGEMENT SYSTEM");
 
-            string choice = Console.ReadLine()?.Trim() ?? "";
+            Console.WriteLine("1. Dashboard");
+            Console.WriteLine("2. Add Student");
+            Console.WriteLine("3. View All Students");
+            Console.WriteLine("4. Search Student");
+            Console.WriteLine("5. Update Student");
+            Console.WriteLine("6. Delete Student");
+            Console.WriteLine("7. Statistics");
+            Console.WriteLine("8. Exit");
+
+            Console.Write("\nEnter your choice: ");
+            string? choice = Console.ReadLine();
 
             switch (choice)
             {
                 case "1":
-                    AddStudent();
+                    ShowDashboard();
                     break;
 
                 case "2":
-                    ViewStudents();
+                    AddStudent();
                     break;
 
                 case "3":
-                    SearchStudent();
+                    ViewStudents();
                     break;
 
                 case "4":
-                    UpdateStudent();
+                    SearchStudent();
                     break;
 
                 case "5":
-                    DeleteStudent();
+                    UpdateStudent();
                     break;
 
                 case "6":
-                    ShowStatistics();
+                    DeleteStudent();
                     break;
 
                 case "7":
-                    ConsoleHelper.Header("EXIT");
-                    Console.WriteLine("Thank you for using Student Management System.");
-                    Console.WriteLine("Goodbye!");
+                    ShowStatistics();
+                    break;
+
+                case "8":
+                    ConsoleHelper.Success("Thank you for using Student Management System!");
                     return;
 
                 default:
-                    ConsoleHelper.Error("Invalid option. Please select 1-7.");
+                    ConsoleHelper.Error("Invalid choice. Please select 1-8.");
                     ConsoleHelper.Pause();
                     break;
             }
         }
     }
 
-    static void ShowDashboard()
+    private static void ShowDashboard()
     {
         Console.Clear();
+        ConsoleHelper.Header("DASHBOARD");
 
-        List<Student> students = studentService.GetAllStudents();
+        var students = studentService.GetAllStudents();
 
-        Console.WriteLine();
-        Console.WriteLine("╔══════════════════════════════════════════════════════════╗");
-        Console.WriteLine("║              STUDENT MANAGEMENT SYSTEM                  ║");
-        Console.WriteLine("║                  PHASE 1 • CONSOLE APP                  ║");
-        Console.WriteLine("╚══════════════════════════════════════════════════════════╝");
+        Console.WriteLine($"Total Students : {students.Count}");
 
-        Console.WriteLine();
-        Console.WriteLine($"  Total Students : {students.Count}");
-        Console.WriteLine($"  Average Marks  : {studentService.GetAverageMarks():F2}");
-
-        Student? topStudent = studentService.GetTopStudent();
-
-        Console.WriteLine(
-            $"  Top Performer  : {(topStudent == null ? "N/A" : topStudent.Name)}");
-
-        Console.WriteLine();
-        Console.WriteLine("────────────────────── MAIN MENU ─────────────────────────");
-        Console.WriteLine();
-        Console.WriteLine("  [1]  Add Student");
-        Console.WriteLine("  [2]  View All Students");
-        Console.WriteLine("  [3]  Search Student");
-        Console.WriteLine("  [4]  Update Student");
-        Console.WriteLine("  [5]  Delete Student");
-        Console.WriteLine("  [6]  Statistics & Reports");
-        Console.WriteLine("  [7]  Exit");
-        Console.WriteLine();
-        Console.Write("  Select an option: ");
-    }
-
-    static void AddStudent()
-    {
-        ConsoleHelper.Header("ADD NEW STUDENT");
-
-        int id = ConsoleHelper.ReadInt("Student ID: ");
-
-        if (studentService.GetStudentById(id) != null)
+        if (students.Count > 0)
         {
-            ConsoleHelper.Error("A student with this ID already exists.");
-            ConsoleHelper.Pause();
-            return;
+            Console.WriteLine($"Average Marks  : {students.Average(s => s.Marks):F2}");
+            Console.WriteLine($"Top Student    : {studentService.GetTopStudent()?.Name ?? "N/A"}");
+        }
+        else
+        {
+            Console.WriteLine("Average Marks  : N/A");
+            Console.WriteLine("Top Student    : N/A");
         }
 
-        string name = ConsoleHelper.ReadRequired("Student Name: ");
+        ConsoleHelper.Pause();
+    }
 
-        int age;
+    private static void AddStudent()
+    {
+        Console.Clear();
+        ConsoleHelper.Header("ADD NEW STUDENT");
 
-        do
-        {
-            age = ConsoleHelper.ReadInt("Age: ");
+        Console.Write("Enter Student ID: ");
+        int id = int.Parse(Console.ReadLine() ?? "0");
 
-            if (age < 15 || age > 100)
-                ConsoleHelper.Error("Age must be between 15 and 100.");
+        Console.Write("Enter Name: ");
+        string name = Console.ReadLine() ?? "";
 
-        } while (age < 15 || age > 100);
+        Console.Write("Enter Age: ");
+        int age = int.Parse(Console.ReadLine() ?? "0");
 
-        string course = ConsoleHelper.ReadRequired("Course: ");
+        Console.Write("Enter Course: ");
+        string course = Console.ReadLine() ?? "";
 
-        double marks;
+        Console.Write("Enter Marks: ");
+        double marks = double.Parse(Console.ReadLine() ?? "0");
 
-        do
-        {
-            marks = ConsoleHelper.ReadDouble("Marks (0-100): ");
-
-            if (marks < 0 || marks > 100)
-                ConsoleHelper.Error("Marks must be between 0 and 100.");
-
-        } while (marks < 0 || marks > 100);
-
-        Student student = new Student
+        var student = new Student
         {
             Id = id,
             Name = name,
@@ -139,17 +123,16 @@ class Program
 
         studentService.AddStudent(student);
 
-        ConsoleHelper.Success(
-            $"Student added successfully! Grade: {student.Grade}");
-
+        ConsoleHelper.Success("Student added successfully!");
         ConsoleHelper.Pause();
     }
 
-    static void ViewStudents()
+    private static void ViewStudents()
     {
+        Console.Clear();
         ConsoleHelper.Header("ALL STUDENTS");
 
-        List<Student> students = studentService.GetAllStudents();
+        var students = studentService.GetAllStudents();
 
         if (students.Count == 0)
         {
@@ -158,131 +141,56 @@ class Program
             return;
         }
 
-        Console.WriteLine(
-            $"{"ID",-6}{"Name",-22}{"Age",-6}{"Course",-18}{"Marks",-10}{"Grade",-8}");
-
-        Console.WriteLine(new string('─', 70));
-
-        foreach (Student student in students)
+        foreach (var student in students)
         {
             Console.WriteLine(
-                $"{student.Id,-6}" +
-                $"{student.Name,-22}" +
-                $"{student.Age,-6}" +
-                $"{student.Course,-18}" +
-                $"{student.Marks,-10:F2}" +
-                $"{student.Grade,-8}");
+                $"ID: {student.Id} | " +
+                $"Name: {student.Name} | " +
+                $"Age: {student.Age} | " +
+                $"Course: {student.Course} | " +
+                $"Marks: {student.Marks:F2} | " +
+                $"Grade: {student.Grade}");
         }
-
-        Console.WriteLine();
-        Console.WriteLine($"Total Students: {students.Count}");
 
         ConsoleHelper.Pause();
     }
 
-    static void SearchStudent()
+    private static void SearchStudent()
     {
+        Console.Clear();
         ConsoleHelper.Header("SEARCH STUDENT");
 
-        string keyword =
-            ConsoleHelper.ReadRequired(
-                "Enter ID, name or course: ");
+        Console.Write("Enter Student ID: ");
+        int id = int.Parse(Console.ReadLine() ?? "0");
 
-        List<Student> results =
-            studentService.SearchStudents(keyword);
+        var student = studentService.GetStudentById(id);
 
-        if (results.Count == 0)
-        {
-            ConsoleHelper.Error("No matching students found.");
-            ConsoleHelper.Pause();
-            return;
-        }
-
-        Console.WriteLine();
-        Console.WriteLine($"Found {results.Count} student(s):");
-        Console.WriteLine();
-
-        foreach (Student student in results)
-        {
-            DisplayStudent(student);
-        }
-
-        ConsoleHelper.Pause();
-    }
-
-    static void UpdateStudent()
-    {
-        ConsoleHelper.Header("UPDATE STUDENT");
-
-        int id = ConsoleHelper.ReadInt("Enter Student ID: ");
-
-        Student? existing =
-            studentService.GetStudentById(id);
-
-        if (existing == null)
+        if (student == null)
         {
             ConsoleHelper.Error("Student not found.");
-            ConsoleHelper.Pause();
-            return;
+        }
+        else
+        {
+            Console.WriteLine($"\nID      : {student.Id}");
+            Console.WriteLine($"Name    : {student.Name}");
+            Console.WriteLine($"Age     : {student.Age}");
+            Console.WriteLine($"Course  : {student.Course}");
+            Console.WriteLine($"Marks   : {student.Marks:F2}");
+            Console.WriteLine($"Grade   : {student.Grade}");
         }
 
-        Console.WriteLine("\nCurrent Details:");
-        DisplayStudent(existing);
-
-        Console.WriteLine("\nEnter new details:");
-
-        string name =
-            ConsoleHelper.ReadRequired("New Name: ");
-
-        int age;
-
-        do
-        {
-            age = ConsoleHelper.ReadInt("New Age: ");
-
-            if (age < 15 || age > 100)
-                ConsoleHelper.Error("Age must be between 15 and 100.");
-
-        } while (age < 15 || age > 100);
-
-        string course =
-            ConsoleHelper.ReadRequired("New Course: ");
-
-        double marks;
-
-        do
-        {
-            marks =
-                ConsoleHelper.ReadDouble("New Marks (0-100): ");
-
-            if (marks < 0 || marks > 100)
-                ConsoleHelper.Error("Marks must be between 0 and 100.");
-
-        } while (marks < 0 || marks > 100);
-
-        Student updatedStudent = new Student
-        {
-            Id = id,
-            Name = name,
-            Age = age,
-            Course = course,
-            Marks = marks
-        };
-
-        studentService.UpdateStudent(updatedStudent);
-
-        ConsoleHelper.Success("Student updated successfully.");
         ConsoleHelper.Pause();
     }
 
-    static void DeleteStudent()
+    private static void UpdateStudent()
     {
-        ConsoleHelper.Header("DELETE STUDENT");
+        Console.Clear();
+        ConsoleHelper.Header("UPDATE STUDENT");
 
-        int id = ConsoleHelper.ReadInt("Enter Student ID: ");
+        Console.Write("Enter Student ID: ");
+        int id = int.Parse(Console.ReadLine() ?? "0");
 
-        Student? student =
-            studentService.GetStudentById(id);
+        var student = studentService.GetStudentById(id);
 
         if (student == null)
         {
@@ -291,33 +199,53 @@ class Program
             return;
         }
 
-        Console.WriteLine("\nStudent to be deleted:");
-        DisplayStudent(student);
+        Console.Write($"Enter new name ({student.Name}): ");
+        string name = Console.ReadLine() ?? student.Name;
 
-        Console.Write("\nAre you sure? (Y/N): ");
+        Console.Write($"Enter new age ({student.Age}): ");
+        int age = int.Parse(Console.ReadLine() ?? student.Age.ToString());
 
-        string confirmation =
-            Console.ReadLine()?.Trim().ToUpper() ?? "";
+        Console.Write($"Enter new course ({student.Course}): ");
+        string course = Console.ReadLine() ?? student.Course;
 
-        if (confirmation == "Y")
-        {
-            studentService.DeleteStudent(id);
-            ConsoleHelper.Success("Student deleted successfully.");
-        }
+        Console.Write($"Enter new marks ({student.Marks}): ");
+        double marks = double.Parse(Console.ReadLine() ?? student.Marks.ToString());
+
+        student.Name = name;
+        student.Age = age;
+        student.Course = course;
+        student.Marks = marks;
+
+        studentService.UpdateStudent(student);
+
+        ConsoleHelper.Success("Student updated successfully!");
+        ConsoleHelper.Pause();
+    }
+
+    private static void DeleteStudent()
+    {
+        Console.Clear();
+        ConsoleHelper.Header("DELETE STUDENT");
+
+        Console.Write("Enter Student ID: ");
+        int id = int.Parse(Console.ReadLine() ?? "0");
+
+        bool deleted = studentService.DeleteStudent(id);
+
+        if (deleted)
+            ConsoleHelper.Success("Student deleted successfully!");
         else
-        {
-            Console.WriteLine("\nDelete operation cancelled.");
-        }
+            ConsoleHelper.Error("Student not found.");
 
         ConsoleHelper.Pause();
     }
 
-    static void ShowStatistics()
+    private static void ShowStatistics()
     {
-        ConsoleHelper.Header("STATISTICS & REPORTS");
+        Console.Clear();
+        ConsoleHelper.Header("STUDENT STATISTICS");
 
-        List<Student> students =
-            studentService.GetAllStudents();
+        var students = studentService.GetAllStudents();
 
         if (students.Count == 0)
         {
@@ -326,56 +254,11 @@ class Program
             return;
         }
 
-        Student? topStudent =
-            studentService.GetTopStudent();
-
-        Console.WriteLine($"Total Students     : {students.Count}");
-        Console.WriteLine(
-            $"Average Marks      : {studentService.GetAverageMarks():F2}");
-
-        Console.WriteLine(
-            $"Highest Marks      : {students.Max(s => s.Marks):F2}");
-
-        Console.WriteLine(
-            $"Lowest Marks       : {students.Min(s => s.Marks):F2}");
-
-        Console.WriteLine(
-            $"Passing Students   : {students.Count(s => s.Marks >= 50)}");
-
-        Console.WriteLine(
-            $"Failing Students   : {students.Count(s => s.Marks < 50)}");
-
-        if (topStudent != null)
-        {
-            Console.WriteLine();
-            Console.WriteLine("🏆 TOP PERFORMER");
-            DisplayStudent(topStudent);
-        }
-
-        Console.WriteLine();
-        Console.WriteLine("COURSE-WISE STUDENT COUNT");
-        Console.WriteLine("--------------------------------");
-
-        Dictionary<string, int> statistics =
-            studentService.GetCourseStatistics();
-
-        foreach (var course in statistics)
-        {
-            Console.WriteLine($"{course.Key,-20} : {course.Value}");
-        }
+        Console.WriteLine($"Total Students : {students.Count}");
+        Console.WriteLine($"Average Marks  : {students.Average(s => s.Marks):F2}");
+        Console.WriteLine($"Highest Marks  : {students.Max(s => s.Marks):F2}");
+        Console.WriteLine($"Lowest Marks   : {students.Min(s => s.Marks):F2}");
 
         ConsoleHelper.Pause();
-    }
-
-    static void DisplayStudent(Student student)
-    {
-        Console.WriteLine("----------------------------------------");
-        Console.WriteLine($"ID      : {student.Id}");
-        Console.WriteLine($"Name    : {student.Name}");
-        Console.WriteLine($"Age     : {student.Age}");
-        Console.WriteLine($"Course  : {student.Course}");
-        Console.WriteLine($"Marks   : {student.Marks:F2}");
-        Console.WriteLine($"Grade   : {student.Grade}");
-        Console.WriteLine("----------------------------------------");
     }
 }

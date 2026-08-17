@@ -6,67 +6,29 @@ public static class ConsoleHelper
     {
         Console.Clear();
 
+        Console.WriteLine("╔══════════════════════════════════════════════╗");
+        Console.WriteLine($"║ {title.PadRight(44)}║");
+        Console.WriteLine("╚══════════════════════════════════════════════╝");
         Console.WriteLine();
-        Console.WriteLine("╔══════════════════════════════════════════════════════════╗");
-        Console.WriteLine($"║ {title,-56}║");
-        Console.WriteLine("╚══════════════════════════════════════════════════════════╝");
-        Console.WriteLine();
-    }
-
-    public static void Pause()
-    {
-        Console.WriteLine();
-        Console.Write("Press any key to continue...");
-        Console.ReadKey();
     }
 
     public static void Success(string message)
     {
+        Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine($"\n✓ {message}");
+        Console.ResetColor();
     }
 
     public static void Error(string message)
     {
+        Console.ForegroundColor = ConsoleColor.Red;
         Console.WriteLine($"\n✗ {message}");
+        Console.ResetColor();
     }
 
-    public static int ReadInt(string message)
+    public static void Pause()
     {
-        while (true)
-        {
-            Console.Write(message);
-
-            if (int.TryParse(Console.ReadLine(), out int value))
-                return value;
-
-            Error("Please enter a valid number.");
-        }
-    }
-
-    public static double ReadDouble(string message)
-    {
-        while (true)
-        {
-            Console.Write(message);
-
-            if (double.TryParse(Console.ReadLine(), out double value))
-                return value;
-
-            Error("Please enter a valid number.");
-        }
-    }
-
-    public static string ReadRequired(string message)
-    {
-        while (true)
-        {
-            Console.Write(message);
-            string value = Console.ReadLine()?.Trim() ?? "";
-
-            if (!string.IsNullOrWhiteSpace(value))
-                return value;
-
-            Error("This field cannot be empty.");
-        }
+        Console.WriteLine("\nPress any key to continue...");
+        Console.ReadKey();
     }
 }
